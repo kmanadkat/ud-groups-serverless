@@ -14,10 +14,12 @@
     "@types/aws-lambda": "^8.10.17",
     "@types/node": "^10.14.4",
     "aws-sdk": "^2.1248.0",
+    "serverless-aws-documentation": "^1.1.0",
+    "serverless-reqvalidator-plugin": "^2.0.0",
     "serverless-webpack": "^5.2.0",
-    "ts-loader": "^5.3.3",
+    "ts-loader": "^9.4.1",
     "typescript": "^3.4.1",
-    "webpack": "^4.29.6"
+    "webpack": "^5.74.0"
   },
   "author": "Krupesh Anadkat",
   "license": "MIT"
