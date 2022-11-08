@@ -35,6 +35,12 @@ functions:
           method: post
           path: groups
           cors: true
+          request:
+            schemas:
+              application/json:
+                schema: ${file(models/add-group-request.json)}
+                name: groupRequestModel
+                description: 'Validation model for Adding Groups'
 
 resources:
   Resources:
