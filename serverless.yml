@@ -28,6 +28,13 @@ functions:
           method: get
           path: groups
           cors: true
+  addGroup:
+    handler: src/lambda/http/addGroup.handler
+    events:
+      - http:
+          method: post
+          path: groups
+          cors: true
 
 resources:
   Resources:
