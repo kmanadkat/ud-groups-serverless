@@ -24,6 +24,7 @@ provider:
         - Effect: Allow
           Action:
             - dynamodb:Query
+            - dynamodb:PutItem
           Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}
         - Effect: Allow
           Action:
@@ -65,6 +66,19 @@ functions:
           method: get
           path: images/{imageId}
           cors: true
+  addImage:
+    handler: src/lambda/http/addImage.handler
+    events:
+      - http:
+          method: post
+          path: groups/{groupId}/images
+          cors: true
+          request:
+            schemas:
+              application/json:
+                schema: ${file(models/add-image-request.json)}
+                name: imageRequestModel
+                description: 'Validation model for Adding Images'
 
 resources:
   Resources:
