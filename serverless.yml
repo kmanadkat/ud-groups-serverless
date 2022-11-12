@@ -94,13 +94,19 @@ functions:
                 schema: ${file(models/add-image-request.json)}
                 name: imageRequestModel
                 description: 'Validation model for Adding Images'
+
   sendUploadNotification:
+    environment:
+      STAGE: ${self:provider.stage}
+      API_ID:
+        Ref: WebsocketsApi
     handler: src/lambda/s3/sendNotification.handler
     events:
       - s3:
           bucket: ${self:provider.environment.IMAGES_S3_BUCKET}
           event: s3:ObjectCreated:*
           existing: true
+
   connectHandler:
     handler: src/lambda/websocket/connect.handler
     events:
