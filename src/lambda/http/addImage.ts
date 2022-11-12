@@ -4,8 +4,15 @@ import { v4 as uuid } from 'uuid';
 import { httpResponse } from "../../utils";
 
 const docClient = new AWS.DynamoDB.DocumentClient()
+
+const s3 = new AWS.S3({
+  signatureVersion: 'v4'
+});
+
 const groupsTable = process.env.GROUPS_TABLE
 const imagesTable = process.env.IMAGES_TABLE
+const bucketName = process.env.IMAGES_S3_BUCKET
+const urlExpiration = process.env.SIGNED_URL_EXPIRATION
 
 export const handler: APIGatewayProxyHandler = async (_event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
@@ -19,11 +26,13 @@ export const handler: APIGatewayProxyHandler = async (_event: APIGatewayProxyEve
 
     // Add Image To DB
     const { title } = JSON.parse(_event.body)
+    const imageId = uuid()
     const newItem = {
       title,
       groupId,
       timestamp: new Date().toISOString(),
-      imageId: uuid()
+      imageId,
+      imageUrl: `https://${bucketName}.s3.amazonaws.com/${imageId}`
     }
 
     await docClient.put({
@@ -31,8 +40,11 @@ export const handler: APIGatewayProxyHandler = async (_event: APIGatewayProxyEve
       Item: newItem
     }).promise()
 
+    // Create Signed URL
+    const url = _getUploadUrl(imageId)
+
     // Send Back Items
-    return httpResponse(201, JSON.stringify({ newItem }))
+    return httpResponse(201, JSON.stringify({ newItem, uploadUrl: url }))
   } catch (error) {
     return httpResponse(400, JSON.stringify({ error: error.message }))
   }
@@ -49,4 +61,12 @@ const _groupExists = async (groupId: string) => {
 
   console.log('Get Group: ', result)
   return !!result.Item
+}
+
+const _getUploadUrl = (key: string) => {
+  return s3.getSignedUrl('putObject', {
+    Bucket: bucketName,
+    Key: key,
+    Expires: parseInt(urlExpiration),
+  });
 }
