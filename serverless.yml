@@ -4,6 +4,9 @@ plugins:
   - serverless-webpack
   - serverless-plugin-canary-deployments
 
+package:
+  individually: true
+
 provider:
   tracing:
     lambda: true
