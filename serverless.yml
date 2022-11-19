@@ -2,8 +2,13 @@ service: serverless-udagram-app
 frameworkVersion: ">=3.24.1"
 plugins:
   - serverless-webpack
+  - serverless-plugin-canary-deployments
 
 provider:
+  tracing:
+    lambda: true
+    apiGateway: true
+
   name: aws
   runtime: nodejs14.x
   stage: ${opt:stage, 'dev'}
@@ -61,6 +66,11 @@ provider:
           Action:
             - kms:Decrypt
           Resource: !GetAtt KMSKey.Arn
+        - Effect: Allow
+          Action:
+            - codedeploy:*
+          Resource:
+            - '*'
 
 functions:
 
@@ -91,6 +101,10 @@ functions:
                 schema: ${file(models/add-group-request.json)}
                 name: groupRequestModel
                 description: 'Validation model for Adding Groups'
+    deploymentSettings:
+      type: Linear10PercentEvery1Minute
+      alias: Live
+
   getImages:
     handler: src/lambda/http/getImages.handler
     events:
