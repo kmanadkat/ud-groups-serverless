@@ -104,9 +104,9 @@ functions:
                 schema: ${file(models/add-group-request.json)}
                 name: groupRequestModel
                 description: 'Validation model for Adding Groups'
-    deploymentSettings:
-      type: Linear10PercentEvery1Minute
-      alias: Live
+    # deploymentSettings:
+    #   type: Linear10PercentEvery1Minute
+    #   alias: Live
 
   getImages:
     handler: src/lambda/http/getImages.handler
