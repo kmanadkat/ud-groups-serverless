@@ -1,25 +1,18 @@
-import * as AWS from 'aws-sdk';
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from "aws-lambda";
-import { v4 as uuid } from 'uuid';
 import { httpResponse } from '../../utils';
+import { createGroup } from '../../businessLogic/groups';
+import { AddGroupRequest } from '../../requests/AddGroupRequest'
 
-const docClient = new AWS.DynamoDB.DocumentClient()
-const groupsTable = process.env.GROUPS_TABLE
 
 export const handler: APIGatewayProxyHandler = async (_event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
-    const itemId = uuid()
-    const parsedBody = JSON.parse(_event.body)
+    const parsedBody: AddGroupRequest = JSON.parse(_event.body)
+    const authorization = _event.headers.Authorization
+    const split = authorization.split(' ')
+    const jwtToken = split[1]
 
-    const newItem = {
-      id: itemId,
-      ...parsedBody
-    }
+    const newItem = await createGroup(parsedBody, jwtToken)
 
-    await docClient.put({
-      TableName: groupsTable,
-      Item: newItem
-    }).promise()
     return httpResponse(201, JSON.stringify({ newItem }))
   } catch (error) {
     return httpResponse(400, JSON.stringify({ error: error.message }))
