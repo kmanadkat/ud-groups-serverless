@@ -2,6 +2,7 @@ import * as AWS from 'aws-sdk';
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from "aws-lambda";
 import { v4 as uuid } from 'uuid';
 import { httpResponse } from "../../utils";
+import { getUserId } from '../../auth/utils';
 
 const docClient = new AWS.DynamoDB.DocumentClient()
 
@@ -17,6 +18,10 @@ const urlExpiration = process.env.SIGNED_URL_EXPIRATION
 export const handler: APIGatewayProxyHandler = async (_event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
     const groupId = _event.pathParameters.groupId
+    const authorization = _event.headers.Authorization
+    const split = authorization.split(' ')
+    const jwtToken = split[1]
+    const userId = getUserId(jwtToken)
 
     // Validate Group
     const validGroupId = await _groupExists(groupId)
@@ -32,7 +37,8 @@ export const handler: APIGatewayProxyHandler = async (_event: APIGatewayProxyEve
       groupId,
       timestamp: new Date().toISOString(),
       imageId,
-      imageUrl: `https://${bucketName}.s3.amazonaws.com/${imageId}`
+      imageUrl: `https://${bucketName}.s3.amazonaws.com/${imageId}`,
+      userId
     }
 
     await docClient.put({
